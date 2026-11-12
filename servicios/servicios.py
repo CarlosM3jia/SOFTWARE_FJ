@@ -1,8 +1,6 @@
-from abc import ABC, abstractmethod
 
-# ==========================================
 # CLASE ABSTRACTA BASE: Servicio
-# ==========================================
+
 class Servicio(ABC):
     """
     Clase abstracta que define la estructura común para todos los servicios
@@ -37,9 +35,9 @@ class Servicio(ABC):
         return self._nombre_servicio
 
 
-# ==========================================
+
 # CLASE HIJA 1: ReservaSala
-# ==========================================
+
 class ReservaSala(Servicio):
     def __init__(self, codigo, tarifa_base, capacidad):
         super().__init__(codigo, "Reserva de Sala", tarifa_base)
@@ -62,9 +60,9 @@ class ReservaSala(Servicio):
     def obtener_descripcion(self):
         return f"[Sala] Código: {self._codigo} | Capacidad: {self._capacidad} personas | Tarifa Base/h: ${self._tarifa_base}"
 
-# ==========================================
+
 # CLASE HIJA 2: AlquilerEquipos
-# ==========================================
+
 class AlquilerEquipos(Servicio):
     def __init__(self, codigo, tarifa_base, tipo_equipo):
         super().__init__(codigo, "Alquiler de Equipos", tarifa_base)
@@ -86,9 +84,9 @@ class AlquilerEquipos(Servicio):
         return f"[Equipo] Código: {self._codigo} | Tipo: {self._tipo_equipo} | Tarifa Base/día: ${self._tarifa_base}"
 
 
-# ==========================================
+
 # CLASE HIJA 3: AsesoriaEspecializada
-# ==========================================
+
 class AsesoriaEspecializada(Servicio):
     def __init__(self, codigo, tarifa_base, area):
         super().__init__(codigo, "Asesoría Especializada", tarifa_base)
