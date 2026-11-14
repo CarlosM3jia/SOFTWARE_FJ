@@ -1,5 +1,5 @@
 
-# CLASE ABSTRACTA BASE: Servicio
+ # Servicio
 
 class Servicio(ABC):
     """
@@ -36,7 +36,7 @@ class Servicio(ABC):
 
 
 
-# CLASE HIJA 1: ReservaSala
+# ReservaSala
 
 class ReservaSala(Servicio):
     def __init__(self, codigo, tarifa_base, capacidad):
@@ -61,7 +61,7 @@ class ReservaSala(Servicio):
         return f"[Sala] Código: {self._codigo} | Capacidad: {self._capacidad} personas | Tarifa Base/h: ${self._tarifa_base}"
 
 
-# CLASE HIJA 2: AlquilerEquipos
+#  AlquilerEquipos
 
 class AlquilerEquipos(Servicio):
     def __init__(self, codigo, tarifa_base, tipo_equipo):
@@ -70,7 +70,7 @@ class AlquilerEquipos(Servicio):
             raise ValueError("Debe especificar el tipo de equipo.")
         self._tipo_equipo = str(tipo_equipo).strip()
 
-    # Sobrecarga de método mediante parámetro opcional (seguro)
+    #  (seguro)
     def calcular_costo(self, dias, seguro=0.0):
         if dias <= 0:
             raise ValueError("Los días de alquiler deben ser mayores a cero.")
@@ -85,7 +85,7 @@ class AlquilerEquipos(Servicio):
 
 
 
-# CLASE HIJA 3: AsesoriaEspecializada
+# AsesoriaEspecializada
 
 class AsesoriaEspecializada(Servicio):
     def __init__(self, codigo, tarifa_base, area):
@@ -94,7 +94,7 @@ class AsesoriaEspecializada(Servicio):
             raise ValueError("Debe especificar el área de la asesoría.")
         self._area = str(area).strip()
 
-    # Sobrecarga de método mediante parámetro opcional (bono de descuento)
+    #  (bono de descuento)
     def calcular_costo(self, sesiones, bono_especial=0.0):
         if sesiones <= 0:
             raise ValueError("El número de sesiones debe ser mayor a cero.")
