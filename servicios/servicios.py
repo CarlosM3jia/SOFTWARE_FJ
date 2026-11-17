@@ -1,4 +1,4 @@
-
+from abc import ABC, abstractmethod
  # Servicio
 
 class Servicio(ABC):
