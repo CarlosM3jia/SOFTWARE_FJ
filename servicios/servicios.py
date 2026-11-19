@@ -1,18 +1,26 @@
 from abc import ABC, abstractmethod
+
+# ==========================================
 # CLASE ABSTRACTA BASE: Servicio
+# ==========================================
 class Servicio(ABC):
     """
     Clase abstracta que define la estructura común para todos los servicios
     ofrecidos por Software FJ (Abstracción y Polimorfismo).
     """
     def __init__(self, codigo, nombre_servicio, tarifa_base):
-        self._codigo = codigo
+        if not codigo or str(codigo).strip() == "":
+            raise ValueError("El código del servicio no puede estar vacío.")
+        if float(tarifa_base) <= 0:
+            raise ValueError("La tarifa base debe ser mayor a cero.")
+            
+        self._codigo = str(codigo).strip()
         self._nombre_servicio = nombre_servicio
         self._tarifa_base = float(tarifa_base)
 
     @abstractmethod
     def calcular_costo(self, *args, **kwargs):
-        """Método abstracto sobrescrito por cada clase hija."""
+        """Método abstracto que será sobrescrito por cada clase hija."""
         pass
 
     @abstractmethod
@@ -53,6 +61,7 @@ class ReservaSala(Servicio):
 
     def obtener_descripcion(self):
         return f"[Sala] Código: {self._codigo} | Capacidad: {self._capacidad} personas | Tarifa Base/h: ${self._tarifa_base}"
+
 
 # ==========================================
 # CLASE HIJA 2: AlquilerEquipos
