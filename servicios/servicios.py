@@ -1,7 +1,5 @@
  from abc import ABC, abstractmethod
-
 # CLASE ABSTRACTA BASE: Servicio
-
 class Servicio(ABC):
     """
     Clase abstracta que define la estructura común para todos los servicios
