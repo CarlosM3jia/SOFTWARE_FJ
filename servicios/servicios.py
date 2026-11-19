@@ -1,4 +1,5 @@
- 
+ from abc import ABC, abstractmethod
+
 # CLASE ABSTRACTA BASE: Servicio
 
 class Servicio(ABC):
