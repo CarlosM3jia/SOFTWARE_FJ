@@ -61,6 +61,9 @@ class ReservaSala(Servicio):
         return f"[Sala] Código: {self._codigo} | Capacidad: {self._capacidad} personas | Tarifa Base/h: ${self._tarifa_base}"
 
 
+# ==========================================
+# CLASE HIJA 2: AlquilerEquipos
+# ==========================================
 #  AlquilerEquipos
 
 class AlquilerEquipos(Servicio):
@@ -105,5 +108,6 @@ class AsesoriaEspecializada(Servicio):
         return max(0.0, round(total, 2))
 
     def obtener_descripcion(self):
+        return f"[Asesoría] Código: {self._codigo} | Área: {self._area} | Tarifa Base/sesión: ${self._tarifa_base}"
         return f"[Asesoría] Código: {self._codigo} | Área: {self._area} | Tarifa Base/sesión: ${self._tarifa_base}"
     
