@@ -1,0 +1,51 @@
+2026-11-21 16:12:35,770 | INFO | ===== INICIO DE LA SIMULACIÓN SOFTWARE FJ =====
+2026-11-21 16:12:35,770 | INFO | Inicio de la operación 1: Registrar cliente válido
+2026-11-21 16:12:35,770 | INFO | Operación 1 exitosa: Cliente registrado correctamente. (Laura Gomez)
+2026-11-21 16:12:35,770 | INFO | Fin de la operación 1
+2026-11-21 16:12:35,770 | INFO | Inicio de la operación 2: Registrar segundo cliente válido
+2026-11-21 16:12:35,770 | INFO | Operación 2 exitosa: Cliente registrado correctamente. (Andres Rojas)
+2026-11-21 16:12:35,770 | INFO | Fin de la operación 2
+2026-11-21 16:12:35,770 | INFO | Inicio de la operación 3: Cliente con correo inválido
+2026-11-21 16:12:35,770 | ERROR | Operación 3 falló (error controlado) | DatosClienteInvalidos: El correo electrónico no es válido.
+2026-11-21 16:12:35,770 | INFO | Fin de la operación 3
+2026-11-21 16:12:35,770 | INFO | Inicio de la operación 4: Cliente con teléfono inválido
+2026-11-21 16:12:35,770 | ERROR | Operación 4 falló (error controlado) | DatosClienteInvalidos: El teléfono debe contener entre 7 y 15 dígitos.
+2026-11-21 16:12:35,770 | INFO | Fin de la operación 4
+2026-11-21 16:12:35,770 | INFO | Inicio de la operación 5: Cliente con identificación duplicada
+2026-11-21 16:12:35,770 | ERROR | Operación 5 falló (error controlado) | ErrorCliente: Ya existe un cliente con identificación 1070123456.
+2026-11-21 16:12:35,770 | INFO | Fin de la operación 5
+2026-11-21 16:12:35,770 | INFO | Inicio de la operación 6: Crear servicio de sala y calcular costo
+2026-11-21 16:12:35,770 | INFO | Operación 6 exitosa: [Sala] Código: SALA-101 | Capacidad: 20 personas | Tarifa Base/h: $50000.0 | 4 h con 10% dto + IVA = $214200.0
+2026-11-21 16:12:35,770 | INFO | Fin de la operación 6
+2026-11-21 16:12:35,770 | INFO | Inicio de la operación 7: Servicio con tarifa no numérica
+2026-11-21 16:12:35,770 | ERROR | Operación 7 falló (error controlado) | DatosServicioInvalidos: La tarifa base debe ser un número válido. | causa: ValueError: could not convert string to float: 'gratis'
+2026-11-21 16:12:35,771 | INFO | Fin de la operación 7
+2026-11-21 16:12:35,771 | INFO | Inicio de la operación 8: Crear equipo y asesoría (polimorfismo)
+2026-11-21 16:12:35,771 | INFO | Operación 8 exitosa: Equipo 3 días = $260000.0 | Asesoría 2 sesiones = $210000.0
+2026-11-21 16:12:35,771 | INFO | Fin de la operación 8
+2026-11-21 16:12:35,771 | INFO | Inicio de la operación 9: Reserva exitosa (confirmar y procesar)
+2026-11-21 16:12:35,771 | INFO | Reserva RES-001 confirmada.
+2026-11-21 16:12:35,771 | INFO | Reserva RES-001 procesada. Total: $214200.0
+2026-11-21 16:12:35,771 | INFO | Intento de procesamiento de RES-001 finalizado.
+2026-11-21 16:12:35,771 | INFO | Operación 9 exitosa: Reserva RES-001 | Cliente: Laura Gomez | Servicio: Reserva de Sala (SALA-101) | Duración: 4 | Estado: PROCESADA | Total: 214200.0
+2026-11-21 16:12:35,771 | INFO | Fin de la operación 9
+2026-11-21 16:12:35,771 | INFO | Inicio de la operación 10: Reserva con servicio no disponible
+2026-11-21 16:12:35,771 | ERROR | Operación 10 falló (error controlado) | ServicioNoDisponible: El servicio EQ-202 no está disponible.
+2026-11-21 16:12:35,771 | INFO | Fin de la operación 10
+2026-11-21 16:12:35,771 | INFO | Inicio de la operación 11: Reserva con duración negativa
+2026-11-21 16:12:35,771 | ERROR | Operación 11 falló (error controlado) | ReservaInvalida: La duración debe ser mayor a cero.
+2026-11-21 16:12:35,771 | INFO | Fin de la operación 11
+2026-11-21 16:12:35,771 | INFO | Inicio de la operación 12: Cancelar y volver a confirmar una reserva
+2026-11-21 16:12:35,771 | INFO | Reserva RES-004 cancelada.
+2026-11-21 16:12:35,771 | ERROR | Operación 12 falló (error controlado) | OperacionNoPermitida: No se puede confirmar una reserva en estado CANCELADA.
+2026-11-21 16:12:35,771 | INFO | Fin de la operación 12
+2026-11-21 16:12:35,771 | INFO | Inicio de la operación 13: Cálculo inconsistente (bono mayor al costo)
+2026-11-21 16:12:35,771 | INFO | Reserva RES-005 confirmada.
+2026-11-21 16:12:35,771 | ERROR | Fallo al procesar la reserva RES-005 | ErrorCalculoCosto: El bono especial no puede superar el costo total.
+2026-11-21 16:12:35,771 | INFO | Intento de procesamiento de RES-005 finalizado.
+2026-11-21 16:12:35,771 | ERROR | Operación 13 falló (error controlado) | ErrorReserva: No se pudo procesar la reserva RES-005. | causa: ErrorCalculoCosto: El bono especial no puede superar el costo total.
+2026-11-21 16:12:35,771 | INFO | Fin de la operación 13
+2026-11-21 16:12:35,771 | INFO | Inicio de la operación 14: Error inesperado (reserva inexistente)
+2026-11-21 16:12:35,771 | CRITICAL | Operación 14 falló (error inesperado) | IndexError: list index out of range
+2026-11-21 16:12:35,771 | INFO | Fin de la operación 14
+2026-11-21 16:12:35,772 | INFO | ===== FIN DE LA SIMULACIÓN SOFTWARE FJ =====
