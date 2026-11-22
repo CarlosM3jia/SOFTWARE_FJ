@@ -1,18 +1,18 @@
 # Archivo: main.py
-# Punto de entrada: simula 14 operaciones completas (válidas e inválidas)
-# del sistema Software FJ sin usar bases de datos.
+# Punto de entrada: integra los módulos de Clientes, Servicios y Reservas y
+# simula 15 operaciones completas (válidas e inválidas) de Software FJ,
+# sin usar bases de datos.
 # Ejecutar con:  python main.py
 
-from modelos.cliente import Cliente  # Clase Cliente
-from modelos.gestor_clientes import GestorClientes  # Administra los clientes
-from modelos.reserva import Reserva  # Clase Reserva
-from servicios.servicios import (  # Servicios especializados
+from modelos.cliente import Cliente  # Módulo de Clientes: clase Cliente
+from modelos.gestor_clientes import GestorClientes  # Módulo de Clientes: gestor
+from servicios.servicios import (  # Módulo de Servicios: servicios especializados
     ReservaSala,
     AlquilerEquipos,
     AsesoriaEspecializada
 )
+from reservas.reserva import Reserva, ReservaError  # Módulo de Reservas
 from excepciones.excepciones_clientes import ErrorCliente  # Errores de clientes
-from excepciones.excepciones_servicios import ErrorServicio, ErrorReserva  # Idem
 from utilidades.logger import (  # Funciones para escribir en el log
     registrar_evento,
     registrar_error,
@@ -38,7 +38,7 @@ def ejecutar_operacion(numero, titulo, funcion):
     registrar_evento(f"Inicio de la operación {numero}: {titulo}")  # Log
     try:  # Bloque que puede fallar
         resultado = funcion()  # Ejecuta la operación recibida
-    except (ErrorCliente, ErrorServicio, ErrorReserva) as error:  # Controlados
+    except (ErrorCliente, ReservaError, ValueError) as error:  # Errores controlados
         estadisticas["controladas"] += 1  # Suma al contador de errores controlados
         registrar_error(f"Operación {numero} falló (error controlado)", error)
         print(f"   [ERROR CONTROLADO] {error}")  # Muestra el error
@@ -96,9 +96,14 @@ def op_servicio_sala_valido():
     return f"{sala.obtener_descripcion()} | 4 h con 10% dto + IVA = ${costo}"
 
 
-def op_servicio_tarifa_invalida():
-    # La tarifa no es numérica: el ValueError de Python queda encadenado
+def op_servicio_tarifa_no_numerica():
+    # La tarifa no es numérica: Python lanza ValueError al convertirla
     return AlquilerEquipos("EQ-999", "gratis", "Monitor")
+
+
+def op_servicio_tarifa_cero():
+    # La tarifa debe ser mayor a cero: el servicio rechaza el dato
+    return AsesoriaEspecializada("ASES-000", 0, "Desarrollo Cloud")
 
 
 def op_servicios_equipo_y_asesoria():
@@ -112,45 +117,41 @@ def op_servicios_equipo_y_asesoria():
 
 
 def op_reserva_exitosa():
+    # INTEGRACIÓN: Cliente (gestor) + Servicio (lista) + Reserva
     cliente = gestor.buscar_cliente("1070123456")  # Cliente registrado
     reserva = Reserva("RES-001", cliente, servicios_registrados[0], 4)  # Sala 4 h
     reservas.append(reserva)  # Se guarda en la lista de reservas
-    reserva.confirmar()  # PENDIENTE -> CONFIRMADA
-    reserva.procesar(descuento_porcentaje=10)  # CONFIRMADA -> PROCESADA
-    return reserva.obtener_descripcion()
+    reserva.confirmar_reserva()  # Pendiente -> Confirmada
+    costo = reserva.calcular_costo_reserva(descuento_porcentaje=10)  # Polimorfismo
+    return f"{reserva.obtener_descripcion()} | Total: ${costo}"
 
 
-def op_reserva_servicio_no_disponible():
+def op_reserva_cantidad_invalida():
     cliente = gestor.buscar_cliente("1070654321")  # Segundo cliente
-    equipo = servicios_registrados[1]  # El equipo creado antes
-    equipo.establecer_disponibilidad(False)  # Se desactiva el servicio
-    reserva = Reserva("RES-002", cliente, equipo, 2)  # Se crea la reserva
-    reservas.append(reserva)  # Queda pendiente en la lista
-    return reserva.confirmar()  # Falla: ServicioNoDisponible
+    # Cantidad negativa: debe lanzar ReservaNoValidaError
+    return Reserva("RES-002", cliente, servicios_registrados[2], -3)
 
 
-def op_reserva_duracion_invalida():
-    cliente = gestor.buscar_cliente("1070654321")
-    # Duración negativa: debe lanzar ReservaInvalida
-    return Reserva("RES-003", cliente, servicios_registrados[2], -3)
+def op_reserva_confirmar_dos_veces():
+    # RES-001 ya está confirmada: debe lanzar ReservaError
+    return reservas[0].confirmar_reserva()
 
 
 def op_reserva_cancelar_y_reconfirmar():
     cliente = gestor.buscar_cliente("1070654321")
-    reserva = Reserva("RES-004", cliente, servicios_registrados[2], 2)  # Asesoría
+    reserva = Reserva("RES-003", cliente, servicios_registrados[2], 2)  # Asesoría
     reservas.append(reserva)  # Se guarda en la lista
-    reserva.cancelar()  # PENDIENTE -> CANCELADA
-    return reserva.confirmar()  # Falla: OperacionNoPermitida
+    reserva.cancelar_reserva()  # Pendiente -> Cancelada
+    return reserva.confirmar_reserva()  # Falla: ReservaError
 
 
 def op_calculo_inconsistente():
-    cliente = gestor.buscar_cliente("1070123456")  # Cliente registrado
-    reserva = Reserva("RES-005", cliente, servicios_registrados[2], 2)  # Asesoría
-    reservas.append(reserva)  # Se guarda en la lista de reservas
-    reserva.confirmar()  # PENDIENTE -> CONFIRMADA
-    # Un bono mayor al costo total es inconsistente: el error de cálculo
-    # queda encadenado dentro de un ErrorReserva (raise ... from ...)
-    return reserva.procesar(bono_especial=999999999)
+    cliente = gestor.buscar_cliente("1070123456")
+    reserva = Reserva("RES-004", cliente, servicios_registrados[0], 2)  # Sala 2 h
+    reservas.append(reserva)  # Se guarda en la lista
+    # Un descuento de 150 % es inconsistente: el ValueError del servicio queda
+    # encadenado dentro de un ReservaNoValidaError (raise ... from ...)
+    return reserva.calcular_costo_reserva(descuento_porcentaje=150)
 
 
 def op_error_inesperado():
@@ -171,13 +172,14 @@ def main():
         ("Cliente con teléfono inválido", op_cliente_telefono_invalido),
         ("Cliente con identificación duplicada", op_cliente_duplicado),
         ("Crear servicio de sala y calcular costo", op_servicio_sala_valido),
-        ("Servicio con tarifa no numérica", op_servicio_tarifa_invalida),
+        ("Servicio con tarifa no numérica", op_servicio_tarifa_no_numerica),
+        ("Servicio con tarifa en cero", op_servicio_tarifa_cero),
         ("Crear equipo y asesoría (polimorfismo)", op_servicios_equipo_y_asesoria),
-        ("Reserva exitosa (confirmar y procesar)", op_reserva_exitosa),
-        ("Reserva con servicio no disponible", op_reserva_servicio_no_disponible),
-        ("Reserva con duración negativa", op_reserva_duracion_invalida),
+        ("Reserva exitosa (confirmar y calcular costo)", op_reserva_exitosa),
+        ("Reserva con cantidad negativa", op_reserva_cantidad_invalida),
+        ("Confirmar dos veces la misma reserva", op_reserva_confirmar_dos_veces),
         ("Cancelar y volver a confirmar una reserva", op_reserva_cancelar_y_reconfirmar),
-        ("Cálculo inconsistente (bono mayor al costo)", op_calculo_inconsistente),
+        ("Cálculo inconsistente (descuento 150%)", op_calculo_inconsistente),
         ("Error inesperado (reserva inexistente)", op_error_inesperado),
     ]
 
