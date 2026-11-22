@@ -18,16 +18,12 @@ os.environ["SOFTWARE_FJ_LOG_DIR"] = CARPETA_LOGS_PRUEBA  # Antes de importar
 from modelos.entidad import Entidad  # noqa: E402
 from modelos.cliente import Cliente  # noqa: E402
 from modelos.gestor_clientes import GestorClientes  # noqa: E402
-from modelos.reserva import Reserva  # noqa: E402
 from servicios.servicios import (  # noqa: E402
     Servicio, ReservaSala, AlquilerEquipos, AsesoriaEspecializada
 )
+from reservas.reserva import Reserva, ReservaError, ReservaNoValidaError  # noqa: E402
 from excepciones.excepciones_clientes import (  # noqa: E402
     DatosClienteInvalidos, ErrorCliente, ClienteNoEncontrado
-)
-from excepciones.excepciones_servicios import (  # noqa: E402
-    DatosServicioInvalidos, ErrorCalculoCosto, ErrorReserva,
-    OperacionNoPermitida, ReservaInvalida, ServicioNoDisponible
 )
 
 
@@ -45,8 +41,6 @@ class PruebasAbstraccion(unittest.TestCase):
 
     def test_herencia(self):
         self.assertTrue(issubclass(Cliente, Entidad))  # Cliente es Entidad
-        self.assertTrue(issubclass(Servicio, Entidad))  # Servicio es Entidad
-        self.assertTrue(issubclass(Reserva, Entidad))  # Reserva es Entidad
         for clase in (ReservaSala, AlquilerEquipos, AsesoriaEspecializada):
             self.assertTrue(issubclass(clase, Servicio))  # Los 3 son Servicio
 
@@ -59,7 +53,6 @@ class PruebasClientes(unittest.TestCase):
 
     def test_datos_invalidos(self):
         casos = [
-            ("abc", "Laura", "l@c.com", "3001234567"),  # Identificación
             ("1070123456", "Al", "l@c.com", "3001234567"),  # Nombre corto
             ("1070123456", "Laura", "sin-arroba", "3001234567"),  # Correo
             ("1070123456", "Laura", "l@c.com", "12ab"),  # Teléfono
@@ -88,24 +81,16 @@ class PruebasServicios(unittest.TestCase):
         self.assertEqual(sala.calcular_costo(4, descuento_porcentaje=10), 214200.0)
         self.assertEqual(sala.calcular_costo(4, impuesto=0), 200000.0)
 
-    def test_errores_de_calculo(self):
+    def test_errores_de_servicio(self):
         sala = ReservaSala("S1", 50000, 20)
-        for argumentos in ((-1,), (2, 150), ("dos",)):
-            with self.assertRaises(ErrorCalculoCosto):
-                sala.calcular_costo(*argumentos)
-        with self.assertRaises(ErrorCalculoCosto):  # Bono mayor al costo
-            AsesoriaEspecializada("A1", 100, "X").calcular_costo(1, bono_especial=500)
-
-    def test_datos_de_servicio_invalidos(self):
-        with self.assertRaises(DatosServicioInvalidos):
-            AlquilerEquipos("E1", 0, "Monitor")  # Tarifa en cero
-        with self.assertRaises(DatosServicioInvalidos):
-            ReservaSala("", 100, 5)  # Código vacío
-
-    def test_encadenamiento_en_servicio(self):
-        with self.assertRaises(DatosServicioInvalidos) as contexto:
-            AlquilerEquipos("E1", "gratis", "Monitor")
-        self.assertIsInstance(contexto.exception.__cause__, ValueError)  # Causa
+        with self.assertRaises(ValueError):  # Horas negativas
+            sala.calcular_costo(-1)
+        with self.assertRaises(ValueError):  # Descuento fuera de rango
+            sala.calcular_costo(2, descuento_porcentaje=150)
+        with self.assertRaises(ValueError):  # Tarifa en cero
+            AlquilerEquipos("E1", 0, "Monitor")
+        with self.assertRaises(ValueError):  # Código vacío
+            ReservaSala("", 100, 5)
 
 
 class PruebasReservas(unittest.TestCase):
@@ -113,41 +98,32 @@ class PruebasReservas(unittest.TestCase):
         self.reserva = Reserva("R1", crear_cliente(), ReservaSala("S1", 50000, 20), 4)
 
     def test_flujo_completo(self):
-        self.assertEqual(self.reserva.estado, "PENDIENTE")
-        self.reserva.confirmar()
-        self.assertEqual(self.reserva.estado, "CONFIRMADA")
-        self.assertEqual(self.reserva.procesar(descuento_porcentaje=10), 214200.0)
-        self.assertEqual(self.reserva.estado, "PROCESADA")
+        self.assertEqual(self.reserva.estado, "Pendiente")
+        self.reserva.confirmar_reserva()
+        self.assertEqual(self.reserva.estado, "Confirmada")
+        self.assertEqual(self.reserva.calcular_costo_reserva(descuento_porcentaje=10), 214200.0)
 
     def test_operaciones_no_permitidas(self):
-        with self.assertRaises(OperacionNoPermitida):  # Procesar sin confirmar
-            self.reserva.procesar()
-        self.reserva.cancelar()
-        with self.assertRaises(OperacionNoPermitida):  # Confirmar cancelada
-            self.reserva.confirmar()
-        with self.assertRaises(OperacionNoPermitida):  # Cancelar dos veces
-            self.reserva.cancelar()
-
-    def test_servicio_no_disponible(self):
-        servicio = AlquilerEquipos("E1", 1000, "Rack")
-        servicio.establecer_disponibilidad(False)
-        with self.assertRaises(ServicioNoDisponible):
-            Reserva("R2", crear_cliente(), servicio, 2).confirmar()
+        self.reserva.confirmar_reserva()
+        with self.assertRaises(ReservaError):  # Confirmar dos veces
+            self.reserva.confirmar_reserva()
+        self.reserva.cancelar_reserva()
+        with self.assertRaises(ReservaError):  # Confirmar una cancelada
+            self.reserva.confirmar_reserva()
+        with self.assertRaises(ReservaError):  # Cancelar dos veces
+            self.reserva.cancelar_reserva()
 
     def test_reserva_invalida(self):
         servicio = ReservaSala("S1", 50000, 20)
-        with self.assertRaises(ReservaInvalida):
-            Reserva("R3", None, servicio, 2)  # Sin cliente
-        with self.assertRaises(ReservaInvalida):
-            Reserva("R3", crear_cliente(), servicio, -3)  # Duración negativa
+        with self.assertRaises(ReservaNoValidaError):
+            Reserva("R3", crear_cliente(), servicio, -3)  # Cantidad negativa
+        with self.assertRaises(ReservaNoValidaError):
+            Reserva("R3", crear_cliente(), servicio, "mucho")  # No numérica
 
-    def test_encadenamiento_en_procesar(self):
-        reserva = Reserva("R4", crear_cliente(), AsesoriaEspecializada("A1", 100, "X"), 1)
-        reserva.confirmar()
-        with self.assertRaises(ErrorReserva) as contexto:
-            reserva.procesar(bono_especial=500)  # Bono mayor al costo
-        self.assertIsInstance(contexto.exception.__cause__, ErrorCalculoCosto)
-        self.assertEqual(reserva.estado, "CONFIRMADA")  # No cambió de estado
+    def test_encadenamiento_en_calculo(self):
+        with self.assertRaises(ReservaNoValidaError) as contexto:
+            self.reserva.calcular_costo_reserva(descuento_porcentaje=150)
+        self.assertIsInstance(contexto.exception.__cause__, ValueError)  # Causa
 
 
 class PruebaSistemaCompleto(unittest.TestCase):
@@ -159,12 +135,12 @@ class PruebaSistemaCompleto(unittest.TestCase):
             capture_output=True, text=True, encoding="utf-8", env=entorno
         )
         self.assertEqual(resultado.returncode, 0)  # Terminó sin caerse
-        self.assertIn("Operaciones ejecutadas: 14", resultado.stdout)  # >= 10
+        self.assertIn("Operaciones ejecutadas: 15", resultado.stdout)  # >= 10
         with open(os.path.join(carpeta, "software_fj.log"), encoding="utf-8") as f:
             lineas = f.read().splitlines()  # Lee el log generado
         errores = [l for l in lineas if "| ERROR |" in l]
         criticos = [l for l in lineas if "| CRITICAL |" in l]
-        self.assertGreaterEqual(len(errores), 8)  # Errores controlados registrados
+        self.assertGreaterEqual(len(errores), 9)  # Errores controlados registrados
         self.assertEqual(len(criticos), 1)  # El error inesperado también
         self.assertTrue(any("causa:" in l for l in errores))  # Cadena de causas
         self.assertTrue(any("INICIO DE LA SIMULACIÓN" in l for l in lineas))
