@@ -2,3 +2,8 @@
 [2026-11-17 13:00:29] - RESERVA RES-001: Reserva confirmada con éxito para el cliente Carlos Perez.
 [2026-11-17 13:01:45] - RESERVA RES-001: Costo calculado exitosamente: $160650.0
 [2026-11-17 13:01:45] - RESERVA RES-001: Reserva confirmada con éxito para el cliente Carlos Perez.
+[2026-11-22 15:23:01] - RESERVA RES-001: Costo calculado exitosamente: $160650.0
+[2026-11-22 15:23:01] - RESERVA RES-001: Reserva confirmada con éxito para el cliente Carlos Perez.
+[2026-11-22 15:33:46] - RESERVA RES-001: Costo calculado exitosamente: $160650.0
+[2026-11-22 15:33:46] - RESERVA RES-001: Reserva confirmada con éxito para el cliente Carlos Perez.
+[2026-11-22 15:33:46] - RESERVA RES-001: Reserva cancelada correctamente.

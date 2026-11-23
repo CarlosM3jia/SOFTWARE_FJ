@@ -1,6 +1,5 @@
 
 from abc import ABC, abstractmethod
-from excepciones.excepciones_clientes import DatosClienteInvalidos
 
 
 class Entidad(ABC):
@@ -10,7 +9,12 @@ class Entidad(ABC):
     """
 
     def __init__(self, identificacion):
-        self.__identificacion = identificacion
+        if identificacion is None or not str(identificacion).strip():
+            raise ValueError(
+                "La identificación de la entidad es obligatoria."
+            )
+
+        self.__identificacion = str(identificacion).strip()
 
     @property
     def identificacion(self):
@@ -24,3 +28,4 @@ class Entidad(ABC):
         las clases que hereden de Entidad.
         """
         pass
+
