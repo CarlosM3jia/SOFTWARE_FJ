@@ -42,4 +42,7 @@ Pruebas:
 
 ## Integrantes
 
-- (Agregar los nombres de los 4 integrantes)
+- Carlos Mario Mejia Floréz
+- Luis Carlos Salazar
+- Kevin Duvan
+- Karen Martínez
