@@ -93,3 +93,4 @@ class Cliente(Entidad):
             self.telefono = telefono
 
         return "Datos del cliente actualizados correctamente."
+

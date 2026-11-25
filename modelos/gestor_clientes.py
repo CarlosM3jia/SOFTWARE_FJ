@@ -23,6 +23,9 @@ class GestorClientes:
 
         identificacion = str(cliente.identificacion).strip()
 
+        if not identificacion:
+            raise ValueError("La identificación del cliente es obligatoria.")
+
         if identificacion in self.__clientes:
             raise ErrorCliente(
                 f"Ya existe un cliente con identificación {identificacion}."

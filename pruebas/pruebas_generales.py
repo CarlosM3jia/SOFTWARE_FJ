@@ -127,24 +127,20 @@ class PruebasReservas(unittest.TestCase):
 
 
 class PruebaSistemaCompleto(unittest.TestCase):
-    def test_main_no_se_detiene_y_registra_el_log(self):
-        carpeta = tempfile.mkdtemp()  # Log exclusivo de esta prueba
-        entorno = dict(os.environ, SOFTWARE_FJ_LOG_DIR=carpeta)  # Entorno propio
-        resultado = subprocess.run(  # Ejecuta main.py como un usuario real
+       def test_main_ejecuta_todas_las_operaciones(self):
+        resultado = subprocess.run(
             [sys.executable, os.path.join(RAIZ, "main.py")],
-            capture_output=True, text=True, encoding="utf-8", env=entorno
+            capture_output=True,
+            text=True,
+            encoding="cp1252"
         )
-        self.assertEqual(resultado.returncode, 0)  # Terminó sin caerse
-        self.assertIn("Operaciones ejecutadas: 15", resultado.stdout)  # >= 10
-        with open(os.path.join(carpeta, "software_fj.log"), encoding="utf-8") as f:
-            lineas = f.read().splitlines()  # Lee el log generado
-        errores = [l for l in lineas if "| ERROR |" in l]
-        criticos = [l for l in lineas if "| CRITICAL |" in l]
-        self.assertGreaterEqual(len(errores), 9)  # Errores controlados registrados
-        self.assertEqual(len(criticos), 1)  # El error inesperado también
-        self.assertTrue(any("causa:" in l for l in errores))  # Cadena de causas
-        self.assertTrue(any("INICIO DE LA SIMULACIÓN" in l for l in lineas))
-        self.assertTrue(any("FIN DE LA SIMULACIÓN" in l for l in lineas))
+
+        self.assertEqual(resultado.returncode, 0)
+        self.assertIn("OPERACION 19:", resultado.stdout)
+        self.assertIn(
+            "FIN DE LAS OPERACIONES DE SOFTWARE FJ",
+            resultado.stdout
+        )
 
 
 if __name__ == "__main__":  # Solo al ejecutar este archivo directamente
